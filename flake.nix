@@ -21,7 +21,25 @@
     nixpkgs,
     agenix,
     pre-commit-hooks
-  }: {
+  }: let
+
+    pkgs = import nixpkgs {
+      system = "x86_64-linux";
+    };
+
+    commonNixBuildInputs = with pkgs; [
+      self.checks.x86_64-linux.pre-commit-check.enabledPackages
+      agenix.packages.x86_64-linux.default
+      trufflehog
+      alejandra
+      nil
+      git
+      tig
+      nixd
+      direnv
+    ];
+
+  in {
     checks = {
         x86_64-linux.pre-commit-check = pre-commit-hooks.lib.x86_64-linux.run {
           src = ./.;
@@ -34,23 +52,21 @@
         };
       };
 
-    devShells.x86_64-linux.nixos = let
-      pkgs = import nixpkgs {
-        system = "x86_64-linux";
+    devShells.x86_64-linux = {
+      default = self.devShells.x86_64-linux.nixos;
+      nixos = pkgs.mkShell {
+        inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
+        buildInputs = commonNixBuildInputs;
       };
-    in
-    pkgs.mkShell {
-      inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
-      buildInputs = with pkgs; [
-        self.checks.x86_64-linux.pre-commit-check.enabledPackages
-        agenix.packages.x86_64-linux.default
-        trufflehog
-        alejandra
-        nil
-        git
-        tig
-        nixd
-      ];
+      nixosServers = pkgs.mkShell {
+        inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
+        buildInputs = with pkgs; [
+          ansible
+          ansible-lint
+          ansible-language-server
+          molecule    # Ansible testing framework
+        ] ++ commonNixBuildInputs;
+      };
     };
   };
 }
