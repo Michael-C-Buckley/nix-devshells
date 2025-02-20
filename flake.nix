@@ -57,6 +57,9 @@
       nixos = pkgs.mkShell {
         inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
         buildInputs = commonNixBuildInputs;
+        env = {
+          TRUFFLEHOG_NO_UPDATE = "1";
+        };
       };
       nixosServers = pkgs.mkShell {
         inherit (self.checks.x86_64-linux.pre-commit-check) shellHook;
