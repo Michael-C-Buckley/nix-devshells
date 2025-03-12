@@ -8,18 +8,11 @@
       url = "github:cachix/git-hooks.nix";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    agenix = {
-      url = "github:ryantm/agenix";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.darwin.follows = "";
-    };
   };
 
   outputs = {
     self,
     nixpkgs,
-    agenix,
     pre-commit-hooks
   }: let
 
@@ -29,7 +22,7 @@
 
     commonNixBuildInputs = with pkgs; [
       self.checks.x86_64-linux.pre-commit-check.enabledPackages
-      agenix.packages.x86_64-linux.default
+      ragenix
       trufflehog
       alejandra
       nil
